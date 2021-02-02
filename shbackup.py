@@ -79,17 +79,16 @@ def run(src_root, dst_big, dst_etc, callback):
 
 	global stop
 
-	callback("Starting...")
-	for i in range(3):
-		if stop:
-			break
-		callback(str(i + 1))
-		time.sleep(1)
-	stop = False
-	callback("Done...", False)
-	return
-
-	logger = logging.getLogger()
+	# for test
+	# callback("Starting...")
+	# for i in range(3):
+	# 	if stop:
+	# 		break
+	# 	callback(str(i + 1))
+	# 	time.sleep(1)
+	# stop = False
+	# callback("Done...", False)
+	# return
 
 	try:
 		for file in os.listdir(src_root):
@@ -108,7 +107,7 @@ def run(src_root, dst_big, dst_etc, callback):
 				pass
 
 	except Exception as e:
-		logger.exception(e)
+		logging.getLogger().exception(e)
 		print(e)
 
 	stop = False

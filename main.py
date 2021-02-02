@@ -27,7 +27,7 @@ class MyApp(QWidget):
 	recent_raw = ""
 	recent_etc = ""
 
-	is_job_running = False
+	running = False
 	t = None
 
 	def __init__(self):
@@ -99,7 +99,7 @@ class MyApp(QWidget):
 		self.show()
 
 	def closeEvent(self, event) -> None:
-		if self.is_job_running:
+		if self.running:
 			qm = QMessageBox
 			reply = qm.question(self,
 								'Message',
@@ -123,7 +123,7 @@ class MyApp(QWidget):
 
 	def set_status(self, msg, running = True):
 		self.lbl_message.setText(msg)
-		self.is_job_running = running
+		self.running = running
 		if running:
 			self.btn_start.setEnabled(False)
 			self.btn_stop.setEnabled(True)
@@ -132,7 +132,7 @@ class MyApp(QWidget):
 			self.btn_stop.setEnabled(False)
 
 	def btn_start_clicked(self):
-		if self.is_job_running:
+		if self.running:
 			return
 		self.t = threading.Thread(target = shbackup.run,
 								  args = (self.edit_src.text(),
