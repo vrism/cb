@@ -74,7 +74,7 @@ def run(src_root, dst_big, dst_etc, callback):
 	if not os.path.exists(src_root) or \
 	   not os.path.exists(dst_big) or \
 	   not os.path.exists(dst_etc):
-		callback("Failed. err = Invalid Path.")
+		callback("Failed. err = Invalid Path.", False)
 		return
 
 	global stop
