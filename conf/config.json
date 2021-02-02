@@ -1,0 +1,6 @@
+{
+    "big": [ "raw" ],
+    "del": [ "jpg", "jpgm" ],
+    "etc": [ "blender", "modeling", "texture", "motion" ],
+    "delete": 0
+}

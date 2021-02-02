@@ -5,23 +5,21 @@ import json
 import threading
 import time
 
-# list_big = ['raw']
-# list_etc = ['blender', 'modeling', 'texture', 'motion']
-# list_del = ['jpg', 'jpgm']
 
-CONFIG_JSON = 'config.json'
+CONFIG_JSON = 'conf/config.json'
 
 
-class ConfigJson:
+class JsonConfig:
 	BIG = "big"
 	ETC = "etc"
 	DEL = "del"
+	DELETE = "delete"
 
 
 stop = False
 
 
-def copy_content(src, dst, func):
+def copy_files(src, dst, func):
 	global stop
 	i = 1
 	num_files = sum(1 for item in os.listdir(src) if os.path.isfile(os.path.join(src, item)))
@@ -46,12 +44,12 @@ def validate_dir(file, src, dst):
 	return src_dir, dst_dir
 
 
-def backup(src, dst_big, dst_etc, func):
+def backup_dir(src, dst_big, dst_etc, func):
 	cf = open(CONFIG_JSON, 'r')
 	config = json.load(cf)
-	list_big = config[ConfigJson.BIG]
-	list_etc = config[ConfigJson.ETC]
-	list_del = config[ConfigJson.DEL]
+	list_big = config[JsonConfig.BIG]
+	list_etc = config[JsonConfig.ETC]
+	list_del = config[JsonConfig.DEL]
 
 	global stop
 	for f in os.listdir(src):
@@ -60,26 +58,26 @@ def backup(src, dst_big, dst_etc, func):
 		fl = f.lower()
 		if fl in list_big:
 			src_dir, dst_dir = validate_dir(fl, src, dst_big)
-			copy_content(src_dir, dst_dir, func)
+			copy_files(src_dir, dst_dir, func)
 		elif fl in list_etc:
 			src_dir, dst_dir = validate_dir(fl, src, dst_etc)
-			copy_content(src_dir, dst_dir, func)
+			copy_files(src_dir, dst_dir, func)
 		elif fl in list_del:
-			# todo
-			continue
+			if config[JsonConfig.DELETE]:
+				src_dir, dst_dir = validate_dir(fl, src, dst_etc)
+				shutil.rmtree(src_dir)
 		else:
 			continue
 
 
 def run(src_root, dst_big, dst_etc, callback):
-	global stop
+	if not os.path.exists(src_root) or \
+	   not os.path.exists(dst_big) or \
+	   not os.path.exists(dst_etc):
+		callback("Failed. err = Invalid Path.")
+		return
 
-	if not os.path.exists(src_root):
-		return
-	if not os.path.exists(dst_big):
-		return
-	if not os.path.exists(dst_etc):
-		return
+	global stop
 
 	callback("Starting...")
 	for i in range(3):
@@ -101,13 +99,14 @@ def run(src_root, dst_big, dst_etc, callback):
 			if os.path.isdir(src_cid):
 				dst_big_cid = os.path.join(dst_big, file)		# dst_big/{content_id}
 				dst_etc_cid = os.path.join(dst_etc, file)		# dst_etc/{content_id}
-
 				if not os.path.exists(dst_big_cid):
 					os.mkdir(dst_big_cid)
 				if not os.path.exists(dst_etc_cid):
 					os.mkdir(dst_etc_cid)
+				backup_dir(src_cid, dst_big_cid, dst_etc_cid, callback)
+			else:
+				pass
 
-				backup(src_cid, dst_big_cid, dst_etc_cid, callback)
 	except Exception as e:
 		logger.exception(e)
 		print(e)

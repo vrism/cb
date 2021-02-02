@@ -11,16 +11,21 @@ from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QLineEdi
 	QDesktopWidget, QMessageBox
 
 
-RECENT_DIR_JSON = 'recent_dir.json'
+RECENT_DIR_JSON = 'conf/recent_dir.json'
 
 
-class RecentDirJson:
+class JsonRecent:
 	SRC = "src"
 	RAW = "raw"
 	ETC = "etc"
 
 
 class MyApp(QWidget):
+
+	recent = {}
+	recent_src = ""
+	recent_raw = ""
+	recent_etc = ""
 
 	is_job_running = False
 	t = None
@@ -39,9 +44,9 @@ class MyApp(QWidget):
 		# get/set recent used directory
 		with open(RECENT_DIR_JSON, 'r') as cf:
 			self.recent = json.load(cf)
-			self.recent_src = self.recent[RecentDirJson.SRC]
-			self.recent_raw = self.recent[RecentDirJson.RAW]
-			self.recent_etc = self.recent[RecentDirJson.ETC]
+			self.recent_src = self.recent[JsonRecent.SRC]
+			self.recent_raw = self.recent[JsonRecent.RAW]
+			self.recent_etc = self.recent[JsonRecent.ETC]
 
 		if self.recent_src:
 			self.edit_src = QLineEdit(self.recent_src)
@@ -63,15 +68,16 @@ class MyApp(QWidget):
 		grid.addWidget(self.edit_etc, 2, 1)
 
 		self.btn_start = QPushButton('Start')
-		self.btn_start.clicked.connect(self.btn_start_clicked)
 		self.btn_stop = QPushButton('Stop')
+		self.btn_start.clicked.connect(self.btn_start_clicked)
 		self.btn_stop.clicked.connect(self.btn_stop_clicked)
+		self.btn_start.setEnabled(True)
+		self.btn_stop.setEnabled(False)
+
 		grid_inner = QGridLayout()
 		grid_inner.addWidget(self.btn_start, 0, 0)
 		grid_inner.addWidget(self.btn_stop, 0, 1)
 		grid.addLayout(grid_inner, 3, 1)
-		self.btn_start.setEnabled(True)
-		self.btn_stop.setEnabled(False)
 
 		self.lbl_message = QLabel('')
 		grid.addWidget(self.lbl_message, 4, 1)
@@ -94,15 +100,16 @@ class MyApp(QWidget):
 
 	def closeEvent(self, event) -> None:
 		if self.is_job_running:
-			reply = QMessageBox.question(self,
-										 'Message',
-					    			     'now on you task, Are sure to Quit?',
-										 QMessageBox.Yes | QMessageBox.No,
-										 QMessageBox.No)
-			if reply == QMessageBox.Yes:
-				event.accept()
+			qm = QMessageBox
+			reply = qm.question(self,
+								'Message',
+								'Now on your task, Are sure to Quit?',
+								qm.Yes | qm.No,
+								qm.No)
+			if reply == qm.Yes:
 				shbackup.stop = True
 				self.t.join()
+				event.accept()
 			else:
 				event.ignore()
 		else:
@@ -128,22 +135,21 @@ class MyApp(QWidget):
 		if self.is_job_running:
 			return
 		self.t = threading.Thread(target = shbackup.run,
-							 args = (self.edit_src.text(),
-									 self.edit_raw.text(),
-									 self.edit_etc.text(),
-									 self.set_status))
+								  args = (self.edit_src.text(),
+										  self.edit_raw.text(),
+										  self.edit_etc.text(),
+										  self.set_status))
 		self.t.start()
 		with open(RECENT_DIR_JSON, 'w') as cf:
-			self.recent[RecentDirJson.SRC] = self.edit_src.text()
-			self.recent[RecentDirJson.RAW] = self.edit_raw.text()
-			self.recent[RecentDirJson.ETC] = self.edit_etc.text()
+			self.recent[JsonRecent.SRC] = self.edit_src.text()
+			self.recent[JsonRecent.RAW] = self.edit_raw.text()
+			self.recent[JsonRecent.ETC] = self.edit_etc.text()
 			json.dump(self.recent, cf, indent = 4)
 
 	def btn_stop_clicked(self):
-		if not self.is_job_running:
-			return
 		shbackup.stop = True
-		self.t.join()
+		if self.t is not None:
+			self.t.join()
 		self.t = None
 
 	def btn_src_clicked(self):
