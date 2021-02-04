@@ -7,8 +7,8 @@ import os
 import shbackup
 import json
 import threading
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QFileDialog, \
-	QDesktopWidget, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, \
+	QLineEdit, QPushButton, QFileDialog, QDesktopWidget, QMessageBox
 
 
 RECENT_DIR_JSON = 'conf/recent_dir.json'
