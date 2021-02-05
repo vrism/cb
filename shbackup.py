@@ -28,6 +28,16 @@ def callback_status(func, i, num_files, src):
 		pass
 
 
+def validate_dir(file, src, dst):
+	src_dir = os.path.join(src, file)
+	dst_dir = os.path.join(dst, file)
+	if not os.path.exists(dst_dir):
+		os.mkdir(dst_dir)
+	else:
+		pass
+	return src_dir, dst_dir
+
+
 def copy_all(src, dst, func):
 	global stop
 	i = 1
@@ -48,17 +58,7 @@ def copy_all(src, dst, func):
 				pass
 
 
-def validate_dir(file, src, dst):
-	src_dir = os.path.join(src, file)
-	dst_dir = os.path.join(dst, file)
-	if not os.path.exists(dst_dir):
-		os.mkdir(dst_dir)
-	else:
-		pass
-	return src_dir, dst_dir
-
-
-def sync_dir(src, dst_big, dst_etc, func):
+def sync_content(src, dst_big, dst_etc, func):
 	cf = open(CONFIG_JSON, 'r')
 	conf = json.load(cf)
 	dirs_big = list(map(lambda x: x.lower(), conf[JsonConfig.BIG]))
@@ -111,7 +111,7 @@ def sync_path(depth_level, src, dst_big, dst_etc, callback):
 						  src_sub,
 						  big_sub, etc_sub, callback)
 			else:
-				sync_dir(src_sub, big_sub, etc_sub, callback)
+				sync_content(src_sub, big_sub, etc_sub, callback)
 		else:
 			pass
 
